@@ -34,9 +34,12 @@ function isPathWithinRoot(rootDir: string, fullPath: string): boolean {
 
   // Windows filesystem is case-insensitive by default.
   if (process.platform === 'win32') {
-    return candidate.toLowerCase().startsWith(rootWithSep.toLowerCase())
+    const c = candidate.toLowerCase()
+    const r = root.toLowerCase()
+    const rs = rootWithSep.toLowerCase()
+    return c === r || c.startsWith(rs)
   }
-  return candidate.startsWith(rootWithSep)
+  return candidate === root || candidate.startsWith(rootWithSep)
 }
 
 function resolveUnderRoot(rootDir: string, relPath: string): string {
