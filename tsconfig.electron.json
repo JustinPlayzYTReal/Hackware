@@ -3,7 +3,7 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.electron.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "types": ["node", "electron"],
     "skipLibCheck": true,
@@ -17,4 +17,3 @@
   },
   "include": ["electron", "scripts"]
 }
-

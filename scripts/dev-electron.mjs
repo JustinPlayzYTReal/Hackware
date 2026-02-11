@@ -24,6 +24,7 @@ function restartElectron() {
   startElectron()
 }
 
+let firstSuccessfulBuild = true
 const ctx = await esbuild.context({
   entryPoints: ['electron/main.ts', 'electron/preload.ts'],
   bundle: true,
@@ -35,26 +36,25 @@ const ctx = await esbuild.context({
   external: ['electron'],
   outExtension: { '.js': '.cjs' },
   logLevel: 'silent',
+  plugins: [
+    {
+      name: 'restart-electron-on-build',
+      setup(build) {
+        build.onEnd((result) => {
+          if (result.errors.length > 0) {
+            console.error('[electron] build failed')
+            return
+          }
+          if (firstSuccessfulBuild) {
+            firstSuccessfulBuild = false
+            startElectron()
+            return
+          }
+          restartElectron()
+        })
+      },
+    },
+  ],
 })
 
-let first = true
-await ctx.watch({
-  onRebuild(error) {
-    if (error) {
-      console.error('[electron] rebuild failed', error)
-      return
-    }
-    if (first) {
-      first = false
-      startElectron()
-      return
-    }
-    restartElectron()
-  },
-})
-
-// Initial build triggers noRebuild callback; force it once.
-await ctx.rebuild()
-first = false
-startElectron()
-
+await ctx.watch()

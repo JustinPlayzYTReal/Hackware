@@ -1,11 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import type { AuditEvent, DirEntry, Settings } from './shared'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL || process.env.ELECTRON_START_URL
 const IS_DEV = Boolean(DEV_SERVER_URL)
@@ -87,7 +83,8 @@ async function getRecentAudit(limit: number): Promise<AuditEvent[]> {
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {
-  const preloadPath = path.join(__dirname, 'preload.cjs')
+  const appPath = app.getAppPath()
+  const preloadPath = path.join(appPath, 'dist-electron', 'preload.cjs')
 
   mainWindow = new BrowserWindow({
     width: 1060,
@@ -105,7 +102,7 @@ function createWindow(): void {
     void mainWindow.loadURL(DEV_SERVER_URL)
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
-    const indexHtml = path.join(__dirname, '..', 'dist', 'index.html')
+    const indexHtml = path.join(app.getAppPath(), 'dist', 'index.html')
     void mainWindow.loadFile(indexHtml)
   }
 }
@@ -149,7 +146,9 @@ ipcMain.handle('settings:consentSet', async (_evt, accepted: boolean) => {
 
 ipcMain.handle('settings:pickRootDir', async () => {
   const s = await readSettings()
-  requireConsent({ ...s, rootDir: s.rootDir ?? '' })
+  if (!s.consentAccepted) {
+    throw new Error('Consent is required before performing this action.')
+  }
 
   const res = await dialog.showOpenDialog(mainWindow!, {
     title: 'Select Root Folder',
@@ -286,4 +285,3 @@ ipcMain.handle('audit:getRecent', async (_evt, limit?: number) => {
   void s
   return getRecentAudit(lim)
 })
-
