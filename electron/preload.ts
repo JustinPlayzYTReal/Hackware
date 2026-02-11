@@ -7,18 +7,18 @@ function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
 
 const api: DesktopApi = {
   getSettings: () => invoke<Settings>('settings:get'),
-  setConsentAccepted: (accepted) => invoke<Settings>('settings:consentSet', accepted),
+  setConsentAccepted: (accepted: boolean) => invoke<Settings>('settings:consentSet', accepted),
   pickRootDir: () => invoke<Settings>('settings:pickRootDir'),
   clearAppData: () => invoke<void>('settings:clearAppData'),
 
-  listDir: (relPath) => invoke('fs:listDir', relPath),
-  readTextFile: (relPath) => invoke('fs:readText', relPath),
-  trashItem: (relPath) => invoke<void>('fs:trashItem', relPath),
-  renameItem: (oldRelPath, newName) => invoke<void>('fs:renameItem', oldRelPath, newName),
-  copyItem: (srcRelPath, destRelPath) => invoke<void>('fs:copyItem', srcRelPath, destRelPath),
+  listDir: (relPath?: string) => invoke('fs:listDir', relPath),
+  readTextFile: (relPath: string) => invoke('fs:readText', relPath),
+  trashItem: (relPath: string) => invoke<void>('fs:trashItem', relPath),
+  renameItem: (oldRelPath: string, newName: string) => invoke<void>('fs:renameItem', oldRelPath, newName),
+  copyItem: (srcRelPath: string, destRelPath: string) => invoke<void>('fs:copyItem', srcRelPath, destRelPath),
 
-  getRecentAudit: (limit) => invoke<AuditEvent[]>('audit:getRecent', limit),
-  onAuditEvent: (cb) => {
+  getRecentAudit: (limit?: number) => invoke<AuditEvent[]>('audit:getRecent', limit),
+  onAuditEvent: (cb: (evt: AuditEvent) => void) => {
     const handler = (_evt: unknown, payload: AuditEvent) => cb(payload)
     ipcRenderer.on('audit:event', handler)
     return () => ipcRenderer.off('audit:event', handler)
@@ -26,4 +26,3 @@ const api: DesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('desktop', api)
-
