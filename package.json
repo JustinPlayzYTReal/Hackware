@@ -1,0 +1,62 @@
+{
+  "name": "hackware",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev:renderer": "vite --port 5173",
+    "dev:electron": "wait-on tcp:5173 && node scripts/dev-electron.mjs",
+    "dev": "concurrently -k -n renderer,electron -c cyan,magenta \"npm run dev:renderer\" \"npm run dev:electron\"",
+    "build:renderer": "tsc -b && vite build",
+    "build:electron": "node scripts/build-electron.mjs",
+    "build": "npm run build:renderer && npm run build:electron",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^40.2.1",
+    "electron-builder": "^26.7.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vite": "^7.3.1",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.hackware.safeapp",
+    "productName": "Hackware Safe Desktop",
+    "asar": true,
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
